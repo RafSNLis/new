@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt_br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css" />
+    <title>HTTP</title>
+</head>
+<body>
+    <div>
+    <h1>O que é HTTP?</h1>
+    <p>
+       HTTP é um protocolo de aplicação em camada, baseado em TCP/IP, que padroniza como clientes e servidores se comunicam entre si. Ele define como o contúdo é requerido e transmitido por toda a internet. Por protocolo de camada de aplicação, quero dizer uma abstração da camada que padroniza como hosts (cliente e servidor) se comunicam. HTTP depende do TCP/IP para conseguir requerimentos e respostas entre servidor e cliente. Por padrão, a porta TCP 80 é usada, mas outras podem ser usadas. A porta do HTTP é 443.
+    </p>
+    <h1>HTTP/0.9- a linha única(1991)</h1>
+    <p>
+        A primeira versão documentada do HTTP foi a HTTP/0.9 em 1991. Era o protocolo mais simples de todos; tendo um único método chamado GET. Se um cliente tivesse acesso a alguma página da web no servidor, teria feito um requerimento como o abaixo:
+    </p>
+    <p class="exemplo"> GET /index.html</p> 
+    <p>
+        E a resposta do servidor seria como abaixo:
+    </p>
+    <p class="exemplo">
+        (response body)
+        (Conection Closed)
+    </p>
+    <p>
+        Isto é, o servidor receberia a requisição, responder com o HTML e assim que o conteúdo tivesse sido transferido, a conexão seria fechada. 
+    </p> 
+        <ul class="get pontos">
+            <li>Sem headers</li>
+            <li>Get era o único método permitido</li>
+            <li>a resposta tinha que ser HTML</li>
+        </ul>
+        <p>
+            Como pode ver o protocolo não era nada além do ponta pé inicial para o que viria em seguida.
+        </p>
+        <h1>HTTP/1.0-1996</h1>
+        <p>A próxima versão do HTTP, a versão 1.0 melhorou imensamente a original</p>
+        <p>Diferente da HTTP/0.9, que foi desenvolvido para resposta do HTML, HTTP1.0 agora poderia lidar com outros formatos de resposta, por exemplo: imagens, arquivos de vídeo, texto e qualquer outro tipo de conteúdo. Adicionou mais métodos como o POST e HEAD, formatos de requisição/resposta foram mudados, headers de HTTP foram adicionados em ambos requisição e resposta, codigos de status foram adicionados para identificar a resposta, suporte a caracteres foi introduzido, tipos de multi parte, autorização, caching, codificação de contúdo e mais foi incluído.</p>
+        <p>Segue o exemplo de como um requerimento e resposta de um HTTP1.0 se parecia:</p>
+        <p class="exemplo">
+            GET / HTTP1.0
+            HOST: cs.fyi
+            User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5)
+            Accept: */*
+        </p>
+        <p>
+            Como você pôde ver, junto com a requisição, o cliente também mandou suas informações pessoais, tipo de resposta requerida, etc. Enquanto na versão 0.9, o cliente jamais poderia enviar essa informação, porque não haviam headers.
+        </p>
+        <p> 
+            Um exemplo de resposta de como à requisição acima deveria se parecer assim: 
+        </p>
+        <p class="exemplo">
+            HTTP/1.0 200 OK 
+            Content-Type: text/plain
+            Content-Length: 137582
+            Expires: Thu, 05 Dec 1997 16:00:00 GMT
+            Last-Modified: Wed, 5 August 1996 15:55:28 GMT
+            Server: Apache 0.84
+            
+            (response body)
+            (connection closed)
+        </p>
+        <p>
+            No início da resposta tem o HTTP/1.0 (HTTP, seguido do número da sua versão), então tem o status codigo 200 seguido frase da rasão (ou descrição do código de status, se preferir).
+        </p>
+        <p>
+            Nessa versão mais nova, headers de requerimento e resposta, se mantiveram como ASCII codificado, mas o corpo da resposta poderia ser de qualquer tipo, imagem, vídeo, HTML, texto, etc. Então, agora o servidor poderia mandar qualquer tipo de conteúdo para o cliente, o termo "hipertexto" se tornou um nome impróprio. Hypermedia ou HMTP, talvez fizesse mais sentido, porém agora estamos presos à esse nome.  
+        </p>
+        <p>
+            Um dos problemas do HTTP1.0 era que não era possível ter multiplas requisições por conexão. Isto é, sempre que um cliente precisar de algo do servidor, teria que abrir uma nova conexão TCP e depois que essa única requisição fosse atendida, a conexão seria fechada. E para a proxima requisição, teria que fazer uma conexão nova. Por quê isso é ruim? Bem, vamos supor que você quer visitar uma página da web que possui 10 imagens, 5 stylesheets e 5 arquivos javascript, totalizando 20 itens que precisam ser trazidos quando a requisição dessa página for feita. Já que a conexão é fechada assim que o requerimento é atendido, uma série de 20 conexões separadas será feita, em que cada um dos itens serão buscados um por um. Essa quantidade de conexões resultará em problemas de performace, pois requerir uma nova conexão TCP impõe uma grande penalidade de performace devido ao three-way hand shake, seguido do início lento.  
+        </p>
+        <h1>Three-way Handshake</h1>
+        <p>
+            Three-way Handshake, na sua forma mais simples é que: todas as conexões TCP começam pelo three-way Handshake em que o cliente e o servidor compartilham uma série de pacotes antes de começar a trocar dados de aplicação. 
+        </p>
+        <ul class="SYNACK">
+            <li>SYN - Cliente pega um número aleatório, por exemplo 'x', e o manda para o servidor.</li>
+            <li>SYN ACK - O servidor reconhece o requerimento mandando um pacote ACK de volta para o cliente que é feito de um número aleatóreo, vamos dizer que y apanhado pelo servidor e o número x + 1, em que x é o número eviado pelo cliente.</li>
+            <li>ACK - O cliente incrementa o número y recebido do servidor e manda um pacote ACK com o número y + 1</li>
+        </ul>
+        <p>
+            Quando o Three-way Handshake é completado, a divisão de dados entre o cliente e o servidor pode começar. Deve-se notar que o cliente pode começar a mandar os dados de aplicação no momento em que o último pacote ACK é despachado, mas o servidor terá que esperar o pacote ACK ser recebido para que possa completar o requerimento. 
+        </p>
+        <img id="Pic" src="ohZthqB.png" alt="ilustração">
+        <p>Porém, algumas implementações do HTTP/1.0 tentaram superar esse problema introduzindo um novo header chamado Connection: keep-alive, que foi feita para falar para o servidor: "Ei servidor, não feche essa conexão, eu preciso dela de novo". Mesmo assim, não era suportado em abrangência e o problema persistiu.</p>
+        <p>
+            Aparte de ser sem conexão, HTTP também é um protocolo sem estado, ou seja, o servidor não mantém informações sobre o cliente então, cada uma das requisições precisam das informações necessárias para atender ao requerimento sozinhas sem nenhuma associação com requerimentos antigos. Isso adiciona gasolina ao fogo, pois além do grande número de conexões que o cliente deve abrir, ele também deve mandar dados redundantes aumentando o uso da bandalarga.
+        </p>
+        <h1>HTTP/1.1 - 1997</h1>
+        <p>Depois de 3 anos de HTTP1.0, a proxima versão 1.1, foi lançada em 1999; e fez grandes aprimoramentos em cima da versão anterior, incluindo:</p>
+        <ul class="aprimoramentos1.1">
+            <li>Novos métodos HTTP foram adicionados: PUT, PATCH, OPTIONS, DELETE.</li>
+            <li>Identificador de Hostname no header do HTTP/1.0 não era necessário mas no 1.1 sim.</li>
+            <li>Conexões persistentes, como discutidas acima, em HTTP/1.0 só havia uma requisição por conexão, e a conexão era fechada assim que a requisição era atendida, o que resultava em problemas de performace e latência. HTTP/1.1 introduziu conexões persistentes, isto é, conexões não eram fechadas imediatamente e eram mantidas abertas, o que permitia muitas requisições sequenciais. Para fechar as conexões, o header Connection: close, deveria estar disponível na requisição. Clientes geralmente mandavam esse header na ultima requisição para fechar seguramente a conexão.</li>
+            <li>Pipelining it, também introduziu o suporte para pipelining, onde o cliente poderia mandar multiplas requisições para o servidor sem esperar resposta uma respostas do servidor na mesma conexão e o servidor tivesse que mandar uma resposta na mesma sequência de requisições que recebia. Mas como o cliente sabe que esse é o ponto o primeiro download de resposta é completado para assim iniciar o conteúdo para a próxima resposta? Para resolver isso é preciso um Content-lenght header estar presente em que clientes podem usar para identificar onde a resposta termina e onde pode começar a esperar pela próxima resposta.</li>
+            <p class="nota">Deve-se notar que para se beneficiar de conexões persistentes ou pipelining, o Content-Length header deve estar disponível na resposta, porque isso permitiria ao cliente, saber quando a transmição se completaria e pode mandar a próxima requisisção (da forma normal de mandar requisições sequenciais), ou começar a esperar pela próxima resposta (quando pipelining estiver habilitado)</p>
+            <p class="nota">Mas ainda existe um problema com esse método. Que é, e se os dados forem dinâmicos e os servidores não puderem encontrar o tamanho do conteúdo antes? Nesse caso, você não pode se beneficiar de conexões persistentes pode? Para resolver esse problema, HTTP/1.1 introduziu a codificação de transferência em partes. Nesses casos, o servidor pode omitir o tamanho de contúdo para favorecer a codificação de tranferência em partes. Contudo, se nenhum deles estiver disponível, a conexão deve ser fechada no final da requisição</p>
+            <li>Transferências em partes, no caso de conteúdo dinâmico, quando um servidor não consegue descobrir o tamanho do conteúdo quando a transmissão se inicia, ela pode começar a mandar conteúdo em partes e adicionar o tamanho do corpo da entidade para cada parte quando é enviada. E quando todas as partes são enviadas, ou seja, a transmissão foi completa, é enviado uma parte vazia, o que tem o corpo da entidade configurado para zero com o intuito de identificar o cliente que a transmissão foi completada. Para notificar o cliente sobre a transferência de parte, o servidor inclui o header Tranfer-encoding: chuncked.</li>
+            <li>Diferentemente do HTTP/1.0 que tem apenas uma autentificação básica, o HTTP/1.1 incluiu digest e autenticação proxy.</li>
+            <li>Caching</li>
+            <li>Byte Ranges</li>
+            <li>Character sets</li>
+            <li>Negociação de conteúdo</li>
+            <li>Cookies do cliente</li>
+            <li>Enhanced compression support</li>
+            <li>Novos codigos de status</li>
+            <li>E mais...</li>
+        </ul>
+        <p>Não irei me prolongar nas características do HTTP/1.1 neste post. Um documento que recomendaria para ler é <a href="https://www.ra.ethz.ch/cdstore/www8/data/2136/pdf/pd1.pdf">diferenças chave</a> entre HTTP/1.0 e HTTP/1.1 e aqui está um link para o <a href="https://www.rfc-editor.org/rfc/rfc2616">RFC original</a> para os mais pesquisadores</p>
+        <p>HTTP/1.1 foi introduzido em 1999 e se tornou o padrão por muitos anos. Contudo, ele melhorou muito sobre seu predecessor; com a web mudando todos os dias, ele começou a mostrar sua idade. Carregar uma página da web nos dias de hoje, é mais consumidor de recursos do que sempre foi. Uma página simples precisa abrir mais de 30 conexões. Bem, 1.1 tem conexões persistentes então porque tantas conexões? A razão é, em HTTP/1.1 só pode haver uma conexão prominente em qualquer momento. HTTP/1.1 tentou concertar isso introduzindo o pipelining, mas não conseguiu concertar completamente por causa do head-of-line blocking onde uma requisição lenta ou densa pode bloquear uma requisição, e quando uma requisição fica presa numa pipeline, ela terá que esperar para a próxima requisição ser atendida. Para superar essas deficiências, os desenvolvedores, implementaram soluções alternativas, por exemplo, o uso de spritesheets, codado em imagens no CSS, únicos e enormes arquivos de javascript, domain sharding, etc.</p>
+        <h1>SPDY - 2009</h1>
+        <p>
+            Google começou a experimentar com protocolos alternativos, para tornar a web mais rápida e segura, enquanto reduzia a latência de páginas da web. Em 2009, anunciaram a SPDY.
+        </p>
+        <p class="nota">SPDY é uma trademark do Google e não é um acrônimo</p>
+        <p>
+            Foi visto que se nós continuarmos aumentando a bandalarga, a performace da network aumenta no início, mas chega num ponto em que não tem muito de um ganho de performace. Mas se você fizer o mesmo com a latência, ou seja, se continuarmos a diminuir a latência, há um ganho constante de performace. Essa é a ideia central do SPDY, diminuir a latência para aumentar a performace da network. 
+        </p>
+        <p class="nota">Para quem não sabe a diferença, latencia é o delay, ou quanto tempo demora para dados viajarem entre a fonte e o destino (medido em milisegundos) e a bandalarga é a quantidade de dados transferidos por segundo (bits por segundo).</p>
+        <p>
+            As características do SPDY incluiam, multiplexing, compression, priorização, segurança, etc. Não entrarei em detalhes do SPDY, já que entraremos em maiores detalhes do SPDY quando falarmos de HTTP/2 que em boa parte inspirado pelo SPDY.
+        </p>
+        <p>
+            SPDY não tentou, substituir o HTTP; ele era uma camada de tradução em cima do HTTP que existia na camada de aplicação e modificava a requisição antes de mandar para o fio. Ele se tornou um padrão e a maioria dos navegadores começou a implementar isso.
+        </p>
+        <p>
+            Em 2015, no Google, eles não queriam ter dois padrões competindo, então decidiram combinar com o HTTP, dando início ao HTTP/2 tornando o SPDY obsoleto.
+        </p>
+        <h1>HTTP/2 - 2015</h1>
+        <p>
+            No momento você deve estar convencido do porque nós precisavamos de outra revisão do protocolo do HTTP. HTTP/2 foi designado para baixa latência e transporte de conteúdo. As principais qualidades e diferenças sobre o HTTP/1.1, incluem:
+        </p>
+        <ul>
+            <li>Binário no lugar de textual</li>
+            <li>Multiplexing - multiplas requisições assincronas em cima de uma única conexão</li>
+            <li>Compressão de header usando HPACK</li>
+            <li>Server Push - multiplas respostas para uma única requisição</li>
+            <li>Prioritização de requerimento</li>
+            <li>segurança</li>
+        </ul>
+        <img src="X1BT5eX.png" alt="ilustração">
+        <h1>1. Protocolo Binário</h1>
+        <p>
+            HTTP/2 tende a resolver o problema de latência que o HTTP/1.1 tinha, tornando o protocolo binário. Sendo um protocolo binário é mais fácil analisar, mas, diferente do HTTP/1.x não é mais possível lê-lo com o olho humano. HTTP/2.0 é construído principalmente por frames e streams.
+        </p>
+        <h2>Frames e Streams</h2>
+        <p>
+            Mensagens HTTP são agora compostas de um ou mais frames. Tem um frame de headers, frame para a meta data, frame de dados para a carga útil e existem vários outros tipos de frames (HEADERS, DATA, RST_STREAM, SETTINGS, PRIORITY etc).
+        </p>
+        <p>
+            Cada requerimento e resposta de HTTP/2 tem um stream ID único e é dividido em frames. Frames não são nada mais que pedaços binários de dados. Uma coleção de dados é chamado de stream. Cada frame tem um stream ID que identifica a stream que pertence e cada frame tem um header comum. Também, além de um stream ID ser único, é bom mencionar que, cada requisição iniciada por um cliente usa números ímpares e a resposta do servidor tem números pares de IDs de stream.
+        </p>
+        <p>
+            Fora dos headers e dados, outro tipo de frame que vale mencionar aqui é RST_STREAM que é um tipo especial de frame que permite abortar alguns streams, ou seja, o cliente pode manda-lo para o servidor saber que eu não preciso mais dessa stream. No HTTP/1.1 o único jeito de fazer o servidor parar de mandar a resposta para o cliente era fechando a conexão, que resultava em um aumento da latência, porque outra conexão precisava ser aberta para quaisquer outras solicitações. Enquanto em HTTP/2, o cliente pode usar RST_STREAM e parar de receber uma stream específica enquanto a conexão se mantém e as outras streams ainda estarão ativas. 
+        </p>
+        <h1>2.Multiplexing</h1>
+        <p>
+            Já que HTTP/2 é agora um protocolo binário, e usa frames e streams para solicitações e respostas, uma vez que uma conexão TCP foi aberta, todas as streams são mandadas assincronamente pela mesma conexão, sem abrir nenhuma conexão adicional. E em retorno, o servidor responde da mesma maneira assíncrona, a resposta não tem ordem e o cliente usa o ID da stream atribuída para identificar a stream que um pacote específico pertence. Isso também resolve o problema do bloqueio de cabeça de linha em redes que existia no HTTP/1.x, o cliente não terá que esperar pela solicitação que está tomando tempo e outras solicitações vão estar sendo processadas.   
+        </p>
+        <h1>Header Compression</h1>
+        <p>
+            Era uma parte de um RFC separado que foi mirado específicamente em optimizar os headers enviados. A essência é quando nós estamos acessando o servidor constanstantemente do mesmo cliente, existem muitos dados reduntantes que estamos mandando repetidamente nos headers, e algumas vezes podem haver cookies aumentando o tamanho dos headers o que resulta em uso da bandalarga e maior latência. Para superar isso, HTTP/2.0 introduziu a compressão de header.
+        </p>
+        <p>
+            Diferentemente de solicitação e resposta, headers não são comprimidos em gzip ou outros fomatos, mas existe outro mecanismo no lugar para a compressão do header que é valores literais sendo codificados usando o codigo Hoffman e a tabela do header é mantida pelo cliente e pelo servidor e tanto um quanto o outro omitem quais quer headers repetidos (usuário, agente, etc.) nas solicitações subsequentes e referenciam ela pela tabela mantido pelos dois.
+        </p>
+        <p>
+            Enquanto ainda falamos de headers, deixe-me adicionar que headers ainda são os mesmos do HTTP/1.1, mas agora com a adição de alguns pseudo headers: ':method', ':scheme', ':host' e ':path'.
+        </p>
+        <h1>Server Push</h1>
+        <p>
+            Server push é outra característica tremenda do HTTP/2.0, onde o servidor, sabendo que o cliente vai pedir por um certo recurso, pode manda-lo para o cliente sem que ele tenha pedir por isso. Por exemplo, vamos dizer que um navegador carrega uma página da web, ele analiza a página toda para descobrir que conteúdo remoto ele precisa carregar do servidor e então, manda solicitações consequentes para o servidor, de forma que possa adquirir aquele conteúdo.
+        </p>
+        <p>
+            Server push permite, que o servidor reduza a ida e volta mandando os dados que se sabe que o cliente vai pedir. Isso acontece pois o servidor manda um frame especial chamado PUSH_PROMISE notificando o cliente que: "Eu vou mandar esse recurso para você, não me peça isso". O frame PUSH_PROMISSE é associado com a stream que mandou o impulso para acontecer e ele contem o ID da stream prometido, isto é, a stream que o servidor vai mandar o recuso para ser impulsionado.
+        </p>
+        <h1>Priorização de Solicitação</h1>
+        <p>
+            Um cliente pode atribuir uma prioridade para a stream incluindo a informação priorizada no frame dos headers pela qual a stream foi aberta. Em qualquer outro momento o cliente pode mandar outro frame de prioridade para mudar a prioridade da stream. 
+        </p>
+        <p>
+            Sem qualquer informação de priorização, o servidor processa as solicitações assincronamente. Se houver alguma priorização designada para uma stream, então baseado nessa informação priorizada, o servidor decide o quanto dos recursos precisa ser dado para processar qual solicitação.
+        </p>
+        <h1>6.Segurança</h1>
+        <p>
+            Houve uma discussão extença se a segurança (por TLS) deveria ser mandatória para HTTP/2 ou não. No fim, foi decidido não fazer mandatório. Porém, a maioria dos vendedores disseram que só iam suportar HTTP/2 quando for usado acima do TLS. Então, como HTTP/2 não requere criptografia por especificações, mas se tornou mandatório por padrão. Com isso dito, implementar HTTP/2 acima de TSL impõe alguns requisitos. TSL 1.2 ou superior deve ser usado deve haver um certo nível minimo de tamanhos de chave, chaves criptográficas são requeridas, etc.
+        </p>
+        <h1>HTTP/3 - 2022</h1>
+        <p>
+            HTTP/3 é a próxima versão do HTTP. Sendo um protocolo baseado em QUIC. QUIC é uma camada de protocolo de transporte que é construído no topo do UDP e foi feito para ser um substituto do TCP. Ele é multiplexed, seguro, protocolo baseado em stream que é designado para reduzir a latência e melhorar a performace. É o sucessor do TCP e do HTTP/2.
+        </p>
+        <p>
+            QUIC é um multiplexed, seguro, protocolo baseado em stream, que foi designado para reduzir latência e melhorar a performace. É um sucessor do TCP e HTTP/2.
+        </p>
+        <h1>Multiplexing</h1>
+        <p>
+            Quic é um protocolo multiplexed, o que significa multiplas streams podem ser mandadas em cima de uma única conexão. Isso é similar a HTTP/2 onde multiplas streams podem ser mandadas em uma única conexão. Porém, diferente de HTTP/2, QUIC não é limitado ao HTTP. Pode ser usado para qualquer aplicação que requere uma entrega de streams de dados tolerante, ordenado, e tolerante à perda. 
+        </p>
+        <h1>Stream-based</h1>
+        <p>
+            Quic é um protocolo baseado em stream, o que quer dizer que dados são mandados na forma de streams. Cada stream é identificada por uma única stream ID. QUIC usa uma única stream para mandar dados para as duas direções. Isso é similar a HTTP/2 onde cada stream é identificado por um único stream ID e cada stream é bidirecional.
+        </p>
+        <h1>Unreliable Datagram</h1>
+        <p>
+            QUIC usa o datagrama não confiavel para mandar dados. Isso quer dizer que o QUIC não garante que os dados vão ser recebidos pelo para o receptor. Contudo, QUIC garante que os dados serão recebidos na mesma ordem que foram enviados. Isso é similar ao UDP onde os dados enviados em forma de datagrama e os datagramas, não são garantidos de serem recebidos pelo recipiente.
+        </p>
+        <h1>Migração de Conexão</h1>
+        <p>
+            QUIC suporta migração de conexão, o que significa que uma conexão QUIC que um endereço IP para outro endereço IP. Isso é similar ao TCP em que conexões de um IP podem ser migrados para outro.
+        </p>
+        <h1>Recuperação de perda</h1>
+        <p>QUIC usa recuperação de perda para recuperar perda de pacotes. Usando uma combinação de controle de congestionamento e recuperação de perda para recuperar pacotes perdidos, similar ao TCP.</p>
+        <h1>Controle de Congestionamento</h1>
+        <p>QUIC usa controle de congestionamento para controlar a variação em que dados são mandados para a network.</p>
+        <h1>Handshake</h1>
+        <p>QUIC usa a Handshake para estabelecer que a conexão é segura entre o servidor e o cliente. QUIC usa TSL 1.3 para estabelecer uma conexão segura entre o cliente e o servidor, como o HTTP/2 fazia utilizando o TSL 1.2.</p>
+        <h1>Compressão de Header</h1>
+        <p>QUIC usa a compressão de header para reduzir o tamanho dos headers, utilizando o HPACK, similarmente ao HTTP/2.</p>
+        <h1>Segurança</h1>
+        <p>QUIC usa a TSL 1.3 para estabelecer uma conexão segura do cliente com o servidor. Como HTTP/2 fazia utilizando o TSL 1.2.</p>
+    </div>
+</body>
+</html>
